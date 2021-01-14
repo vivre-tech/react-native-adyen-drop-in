@@ -33,10 +33,12 @@ import com.adyen.checkout.cse.Encryptor;
 import com.adyen.checkout.dropin.DropIn;
 import com.adyen.checkout.dropin.DropInConfiguration;
 import com.adyen.checkout.dropin.service.CallResult;
+import com.adyen.checkout.googlepay.GooglePayConfiguration;
 import com.adyen.checkout.redirect.RedirectComponent;
 import com.adyen.checkout.redirect.RedirectUtil;
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.google.android.gms.wallet.WalletConstants;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -147,7 +149,18 @@ public class AdyenDropInPayment extends ReactContextBaseJavaModule {
         this.cardConfiguration = cardConfiguration;
         Intent resultIntent = new Intent(this.getCurrentActivity(), this.getCurrentActivity().getClass());
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        this.dropInConfiguration = new DropInConfiguration.Builder(this.getCurrentActivity(), resultIntent, AdyenDropInPaymentService.class).addCardConfiguration(cardConfiguration).build();
+
+        //When you're ready to accept live payments, change the value to WalletConstants.ENVIRONMENT_PRODUCTION.
+        GooglePayConfiguration.Builder googlePayConfigurationBuilder = new GooglePayConfiguration.Builder(this.getCurrentActivity(), "YOUR_MERCHANT_ACCOUNT");
+        googlePayConfigurationBuilder.setGooglePayEnvironment(WalletConstants.ENVIRONMENT_TEST);
+
+        GooglePayConfiguration googlePayConfiguration = googlePayConfigurationBuilder.build();
+
+        this.dropInConfiguration = new DropInConfiguration.Builder(this.getCurrentActivity(), resultIntent, AdyenDropInPaymentService.class)
+            .addCardConfiguration(cardConfiguration)
+            .addGooglePayConfiguration(googlePayConfiguration)
+            .build();
+
         JSONObject jsonObject = null;
         try {
             Log.i("string", paymentMethodsJson);
